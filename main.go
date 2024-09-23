@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"os"
 
 	"gopkg.in/dutchcoders/goftp.v1"
 )
@@ -16,14 +16,29 @@ func main() {
 	var username string
 	var password string
 
-	flag.StringVar(&ip, "t", "127.0.0.1", "ip")
-	flag.IntVar(&port, "p", 21, "port")
-	flag.StringVar(&username, "u", "anonymous", "user")
-	flag.StringVar(&password, "pwd", "", "password")
-	flag.Parse()
+	fmt.Print("IP: ")
+	fmt.Scanln(&ip)
+
+	fmt.Print("Port: ")
+	fmt.Scanln(&port)
+
+	if port == 0 {
+		port = 21
+	}
+
+	fmt.Print("Username: ")
+	fmt.Scanln(&username)
+	if username == "" {
+		username = "anonymous"
+	}
+	fmt.Print("Password: ")
+	fmt.Scanln(&password)
+
+	fmt.Println("username:", username, ", password:", password)
 
 	if ftp, err = goftp.Connect(fmt.Sprintf("%v:%v", ip, port)); err != nil {
-		panic(err)
+		fmt.Println("connect error")
+		os.Exit(1)
 	}
 
 	defer ftp.Close()
@@ -31,11 +46,13 @@ func main() {
 
 	// Username / password authentication
 	if err = ftp.Login(username, password); err != nil {
-		panic(err)
+		fmt.Println("error username/password")
+		os.Exit(1)
 	}
 
 	if err = ftp.Cwd("/"); err != nil {
-		panic(err)
+		fmt.Println("get pwd error")
+		os.Exit(1)
 	}
 
 	var curpath string
